@@ -49,7 +49,9 @@ double AirResist::objective(const std::vector<double> &x, std::vector<double> &g
                   std::bind(&AirResist::model,this, std::placeholders::_1, std::placeholders::_2,
                             std::placeholders::_3, k1, 20),
                   z0, t_start, t_end, 0.05, std::ref(observer));
-  // 调整积分步长
+  // 可以调整积分步长
+  
+  // 应对段错误的处理
   if (grad.size() < 1) {
     grad.resize(1);
   }
@@ -78,7 +80,7 @@ double AirResist::ObjectiveWrapper(const std::vector<double> &x, std::vector<dou
 }
 
 // 优化函数
-cv::Vec2f AirResist::ParabolaSolve(cv::Point2f point_a, double kv) {
+cv::Vec2f AirResist::AirResistSolve(cv::Point2f point_a, double kv) {
   double k1 = 0.0001949;                            // 阻力系数(m)
   double t_start = 0.0;                       // 积分开始时间
   double t_end = 3.0;                        // 积分结束时间 视具体情况定，时间越长，计算开销越大
@@ -116,4 +118,34 @@ cv::Vec2f AirResist::ParabolaSolve(cv::Point2f point_a, double kv) {
   }
 
   return x[0];
+}
+
+cv::Vec2f AirResist::ParabolSolve(cv::Point2f point_a, float kv) {
+  // x1=v*cos@*t
+  // y1=v*sin@t-g*t^2/2
+  // 联立方程消去t,得关于出射角tan@的方程kg*x1*x1/(2*kv*kv)*tan@^2+x1*tan@+kg*x1*x1/(2*kv*kv)-y1=0
+  kv *= 0.01;
+  float kg = 978.8f;
+  float x1 = point_a.x, y1 = point_a.y;
+  float a = kg * x1 * x1 / (2 * kv * kv), b = -x1,
+        c = kg * x1 * x1 / (2 * kv * kv) - y1;
+  if (a == 0) {
+    std::cout << "a=0" << std::endl;
+  }
+  float tan_phi0 = (-b + sqrt(b * b - 4 * a * c)) / (2 * a),
+        tan_phi1 = (-b - sqrt(b * b - 4 * a * c)) / (2 * a);
+
+  if (b * b - 4 * a * c <= 0) {
+    return {-1, -1};
+  }
+  if (kv == 0) {
+    kv = 700;
+  }
+  float phi0 = atan(tan_phi0), phi1 = atan(tan_phi1);
+  if (isnan(phi0) || isnan(phi1)) {
+    return {-1, -1};
+  }
+  cv::Vec2f ret = {-phi0, -phi1};
+  std::cout << ret << std::endl;
+  return ret;
 }

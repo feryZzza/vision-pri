@@ -2,10 +2,6 @@
 #define AIRRESIST_HPP
 
 #include <vector>
-#include <functional>
-#include <limits>
-#include <cmath>
-#include <iostream>
 #include <nlopt.hpp>
 #include <opencv2/opencv.hpp>
 #include <boost/numeric/odeint.hpp>
@@ -25,9 +21,10 @@ public:
     double objective(const std::vector<double> &x, std::vector<double> &grad, void *data);
 
     // 优化函数
-    cv::Vec2f ParabolaSolve(cv::Point2f point_a, double kv);
+    cv::Vec2f AirResistSolve(cv::Point2f point_a, double kv);
 
     static double ObjectiveWrapper(const std::vector<double> &x, std::vector<double> &grad, void *data);
-
+    
+    cv::Vec2f ParabolSolve(cv::Point2f point_a, float kv);
 };
 #endif // AIRRESIST_HPP
