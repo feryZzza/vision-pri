@@ -117,14 +117,14 @@ cv::Vec2f AirResist::AirResistSolve(cv::Point2f point_a, double kv) {
     std::cerr << "nlopt failed: " << e.what() << std::endl;
   }
 
-  return x[0];
+  return x[0]*(3.1415976/180);
 }
 
 cv::Vec2f AirResist::ParabolSolve(cv::Point2f point_a, float kv) {
   // x1=v*cos@*t
   // y1=v*sin@t-g*t^2/2
   // 联立方程消去t,得关于出射角tan@的方程kg*x1*x1/(2*kv*kv)*tan@^2+x1*tan@+kg*x1*x1/(2*kv*kv)-y1=0
-  kv *= 0.01;
+  kv *= 100;
   float kg = 978.8f;
   float x1 = point_a.x, y1 = point_a.y;
   float a = kg * x1 * x1 / (2 * kv * kv), b = -x1,
@@ -140,12 +140,12 @@ cv::Vec2f AirResist::ParabolSolve(cv::Point2f point_a, float kv) {
   }
   if (kv == 0) {
     kv = 700;
-  }
+  }             // 这又是解决什么bug
   float phi0 = atan(tan_phi0), phi1 = atan(tan_phi1);
   if (isnan(phi0) || isnan(phi1)) {
     return {-1, -1};
   }
   cv::Vec2f ret = {-phi0, -phi1};
-  std::cout << ret << std::endl;
+  //std::cout << ret << std::endl;
   return ret;
 }
