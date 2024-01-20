@@ -1,6 +1,4 @@
 build/
-image/
-video/
 .vscode
 .idea
 cmake-build-debug

@@ -81,7 +81,7 @@ double AirResist::ObjectiveWrapper(const std::vector<double> &x, std::vector<dou
 
 // 优化函数
 cv::Vec2f AirResist::AirResistSolve(cv::Point2f point_a, double kv) {
-  double k1 = 0.0001949;                            // 阻力系数(m)
+  double k1 = 0.01949;                            // 阻力系数(m)
   double t_start = 0.0;                       // 积分开始时间
   double t_end = 3.0;                        // 积分结束时间 视具体情况定，时间越长，计算开销越大
   nlopt::opt optimizer(nlopt::LN_COBYLA, 1);  
@@ -126,7 +126,7 @@ cv::Vec2f AirResist::ParabolSolve(cv::Point2f point_a, float kv) {
   // 联立方程消去t,得关于出射角tan@的方程kg*x1*x1/(2*kv*kv)*tan@^2+x1*tan@+kg*x1*x1/(2*kv*kv)-y1=0
   kv *= 100;
   float kg = 978.8f;
-  float x1 = point_a.x, y1 = point_a.y;
+  float x1 = point_a.x*100, y1 = point_a.y*100;
   float a = kg * x1 * x1 / (2 * kv * kv), b = -x1,
         c = kg * x1 * x1 / (2 * kv * kv) - y1;
   if (a == 0) {
@@ -149,3 +149,6 @@ cv::Vec2f AirResist::ParabolSolve(cv::Point2f point_a, float kv) {
   //std::cout << ret << std::endl;
   return ret;
 }
+
+// TODO: 解决k=0时和抛物线模型数据出入过大的问题
+// TODO: 解决可k1测试问题
