@@ -41,7 +41,7 @@ int main() {
         float a,b;
         double kv;
 
-        std::cout << "please input the target coordinates(use: a,b ):";
+        std::cout << "please input the target coordinates(m) (use: a,b):";
         scanf("%f,%f",&a,&b);
 
         std::cout << "please input the bullet's speed(m/s):";
