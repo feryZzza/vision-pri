@@ -1,13 +1,17 @@
 #include "imagetest.hpp"
 
+/**
+ * @brief 传统视觉识别测试
+ */
+
 void Test::test(){
 
-    cv::Mat img = cv::imread("/home/z/桌面/114514.png");
+    cv::Mat img = cv::imread("../image/images/114514.png");
     cv::Mat roi = img;
     cv::Mat src1;
     roi.copyTo(src1);
 
-    static cv::Mat img_gray;
+    cv::Mat img_gray;
     std::vector<cv::Mat> rgb;
 
     cv::Mat hsv, img_gray11, img_gray21;
