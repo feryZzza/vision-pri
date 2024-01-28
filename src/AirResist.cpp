@@ -8,7 +8,7 @@ void AirResist::model(const std::vector<double> &z, std::vector<double> &dzdt, d
   dzdt[0] = vx;
   dzdt[1] = -k1 * vx * std::abs(vx);                  // x方向的阻力
   dzdt[2] = vy;
-  dzdt[3] = -g - k1 * vy * std::abs(vy);              // y方向的阻力和重力
+  dzdt[3] = g - k1 * vy * std::abs(vy);              // y方向的阻力和重力
 }
 
 // Observer结构记录轨迹数据
@@ -17,8 +17,7 @@ void AirResist::StateObserver::operator()(const std::vector<double> &z, double t
 }
 
 // 目标函数
-double AirResist::objective(const std::vector<double> &x, std::vector<double> &grad,
-                 void *data) {
+double AirResist::objective(const std::vector<double> &x, std::vector<double> &grad, void *data) {
   auto params = reinterpret_cast<
       std::tuple<double, std::pair<double, double>, double, double, double> *>(
       data);
@@ -47,8 +46,8 @@ double AirResist::objective(const std::vector<double> &x, std::vector<double> &g
   // 可以使用 this 指针来引用当前对象实例
   integrate_const(stepper_type(),
                   std::bind(&AirResist::model,this, std::placeholders::_1, std::placeholders::_2,
-                            std::placeholders::_3, k1, 20),
-                  z0, t_start, t_end, 0.05, std::ref(observer));
+                            std::placeholders::_3, k1, 9.788),
+                  z0, t_start, t_end, 0.005, std::ref(observer));
   // 可以调整积分步长
   
   // 应对段错误的处理
@@ -81,12 +80,12 @@ double AirResist::ObjectiveWrapper(const std::vector<double> &x, std::vector<dou
 
 // 优化函数
 cv::Vec2f AirResist::AirResistSolve(cv::Point2f point_a, double kv) {
-  double k1 = 0.01949;                            // 阻力系数(m)
+  double k1 = 0.0001949;                      // 阻力系数(m)
   double t_start = 0.0;                       // 积分开始时间
-  double t_end = 3.0;                        // 积分结束时间 视具体情况定，时间越长，计算开销越大
+  double t_end = 4.0;                         // 积分结束时间 视具体情况定，时间越长，计算开销越大
   nlopt::opt optimizer(nlopt::LN_COBYLA, 1);  
-  std::vector<double> lb(1, -30);             // 下界
-  std::vector<double> ub(1, 60);              // 上界
+  std::vector<double> lb(1, -90);             // 下界
+  std::vector<double> ub(1,90);               // 上界
   optimizer.set_lower_bounds(lb);
   optimizer.set_upper_bounds(ub);
   optimizer.set_xtol_rel(1e-6);
@@ -130,7 +129,7 @@ cv::Vec2f AirResist::ParabolSolve(cv::Point2f point_a, float kv) {
   float a = kg * x1 * x1 / (2 * kv * kv), b = -x1,
         c = kg * x1 * x1 / (2 * kv * kv) - y1;
   if (a == 0) {
-    std::cout << "a=0" << std::endl;
+    std::cout << "a = 0" << std::endl;
   }
   float tan_phi0 = (-b + sqrt(b * b - 4 * a * c)) / (2 * a),
         tan_phi1 = (-b - sqrt(b * b - 4 * a * c)) / (2 * a);
@@ -151,4 +150,3 @@ cv::Vec2f AirResist::ParabolSolve(cv::Point2f point_a, float kv) {
 }
 
 // TODO: 解决k=0时和抛物线模型数据出入过大的问题
-// TODO: 解决可k1测试问题

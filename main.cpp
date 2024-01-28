@@ -5,6 +5,7 @@
 #include "fps.hpp"
 #include "Kalm.hpp"
 #include "AirResist.hpp"
+#include "imagetest.hpp"
 
 /*
 file: main.cpp
@@ -55,6 +56,8 @@ int main() {
         break;
     } // case里面的赋值操作需要大括号框起来，以避免在跳转到case或default标签时跳过变量的初始化
     case 5:
+        Test ts;
+        ts.test();
         break;
     case 0:
         break;
