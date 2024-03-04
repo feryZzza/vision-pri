@@ -20,6 +20,7 @@ int main() {
     std::cout << "Enter '2' -> show fps " << "\n";   
     std::cout << "Enter '3' -> kalm filter " << "\n";  
     std::cout << "Enter '4' -> show airresistsolve " << "\n";
+    std::cout << "Enter '5' -> RGB param test " << "\n";
     std::cout << "Enter '0' -> exit " << "\n";
     int input;
     std::cin >> input;
@@ -41,10 +42,8 @@ int main() {
     case 4:{
         float a,b;
         double kv;
-
         std::cout << "please input the target coordinates(m) (use: a,b):";
         scanf("%f,%f",&a,&b);
-
         std::cout << "please input the bullet's speed(m/s):";
         std::cin >> kv;
         AirResist ar;
@@ -54,7 +53,7 @@ int main() {
         cv::Vec2f parabol_deg = ar.ParabolSolve(point_a, kv);
         std::cout << "Parabol angle: " << parabol_deg << " degrees" << std::endl;
         break;
-    } // case里面的赋值操作需要大括号框起来，以避免在跳转到case或default标签时跳过变量的初始化
+    }// case里面的赋值操作需要大括号框起来，以避免在跳转到case或default标签时跳过变量的初始化
     case 5:
         Test ts;
         ts.test();

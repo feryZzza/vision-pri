@@ -44,8 +44,8 @@ void Kalm::kalm() {
     R.setIdentity();            // 单位阵
     P.setIdentity();            // 单位阵
 
-    Q *= 0.1;                   // 过程噪声协方差调节
-    //R *= 10;                  // 测量调节
+    Q *= 0.25;                   // 过程噪声协方差调节
+    R *= 1.6;                  // 测量调节
     
     double previous_x = 0, previous_y = 0;
 
