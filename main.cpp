@@ -49,9 +49,9 @@ int main() {
         AirResist ar;
         cv::Point2f point_a(a,b);
         cv::Vec2f optimal_theta_deg = ar.AirResistSolve(point_a, kv); // 调用优化函数
-        std::cout << "Optimal launch angle: " << optimal_theta_deg << " degrees" << std::endl;
+        std::cout << "Optimal launch angle: " << optimal_theta_deg << std::endl;
         cv::Vec2f parabol_deg = ar.ParabolSolve(point_a, kv);
-        std::cout << "Parabol angle: " << parabol_deg << " degrees" << std::endl;
+        std::cout << "Parabol angle: " << parabol_deg << std::endl;
         break;
     }// case里面的赋值操作需要大括号框起来，以避免在跳转到case或default标签时跳过变量的初始化
     case 5:

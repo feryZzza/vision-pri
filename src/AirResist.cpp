@@ -149,4 +149,6 @@ cv::Vec2f AirResist::ParabolSolve(cv::Point2f point_a, float kv) {
   return ret;
 }
 
-// TODO: 解决k=0时和抛物线模型数据出入过大的问题
+// TODO: 解决k1=0时和抛物线模型数据出入过大的问题
+// TODO：解决在5m到7m这段距离内模型结果比抛物线还小的问题
+// TODO：模型改进，可以考虑在垂直方向的升力作用

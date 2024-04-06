@@ -31,7 +31,7 @@ void CameraCalibration::performCalibration() {
 
     // Load and process calibration images
     for (int i = 1; i <= 20; i++) {
-        cv::Mat image = cv::imread("/home/z/cv/v2/image/calibrate_images/output" + std::to_string(i) + ".jpg");
+        cv::Mat image = cv::imread("/home/fery/cv/v2/image/calibrate_images/output" + std::to_string(i) + ".jpg");
         std::vector<cv::Point2f> corners; // This will be filled by the detected corners
 
         // Find the chess board corners
