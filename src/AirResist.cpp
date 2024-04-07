@@ -2,13 +2,13 @@
 
 // 微分方程模型
 void AirResist::model(const std::vector<double> &z, std::vector<double> &dzdt, double t,
-           double k1, double g) {
+           double k1, double c1, double g) {
   double vx = z[1];
   double vy = z[3];
   dzdt[0] = vx;
   dzdt[1] = -k1 * vx * std::abs(vx);                  // x方向的阻力
   dzdt[2] = vy;
-  dzdt[3] = g - k1 * vy * std::abs(vy);              // y方向的阻力和重力
+  dzdt[3] = g - (k1 - c1) * vy * std::abs(vy);              // y方向的阻力和重力
 }
 
 // Observer结构记录轨迹数据
@@ -19,13 +19,13 @@ void AirResist::StateObserver::operator()(const std::vector<double> &z, double t
 // 目标函数
 double AirResist::objective(const std::vector<double> &x, std::vector<double> &grad, void *data) {
   auto params = reinterpret_cast<
-      std::tuple<double, std::pair<double, double>, double, double, double> *>(
-      data);
+      std::tuple<double, std::pair<double, double>, double, double, double, double> *>(data);
   double k1 = std::get<0>(*params);
   auto point_a = std::get<1>(*params);
   double t_start = std::get<2>(*params);
   double t_end = std::get<3>(*params);
   double kv = std::get<4>(*params);  // 获取传入的 kv 值
+  double c1 = std::get<5>(*params);  // 升力系数
 
   double theta = x[0] * M_PI / 180.0;  // 角度转弧度
 
@@ -34,7 +34,8 @@ double AirResist::objective(const std::vector<double> &x, std::vector<double> &g
 
   // 积分器
   using namespace boost::numeric::odeint;
-  typedef runge_kutta4<std::vector<double>> stepper_type;  // rk4
+  // typedef runge_kutta4<std::vector<double>> stepper_type;  // rk4
+  typedef runge_kutta_dopri5<std::vector<double>> stepper_type; // rk5
   StateObserver observer;
 
   // integrate_const(stepper_type(),
@@ -46,8 +47,8 @@ double AirResist::objective(const std::vector<double> &x, std::vector<double> &g
   // 可以使用 this 指针来引用当前对象实例
   integrate_const(stepper_type(),
                   std::bind(&AirResist::model,this, std::placeholders::_1, std::placeholders::_2,
-                            std::placeholders::_3, k1, 9.788),
-                  z0, t_start, t_end, 0.005, std::ref(observer));
+                            std::placeholders::_3, k1, c1, 9.788),
+                  z0, t_start, t_end, 0.0002, std::ref(observer));
   // 可以调整积分步长
   
   // 应对段错误的处理
@@ -81,6 +82,7 @@ double AirResist::ObjectiveWrapper(const std::vector<double> &x, std::vector<dou
 // 优化函数
 cv::Vec2f AirResist::AirResistSolve(cv::Point2f point_a, double kv) {
   double k1 = 0.0001949;                      // 阻力系数(m)
+  double c1 = 0.0001;                      // 升力系数(m)
   double t_start = 0.0;                       // 积分开始时间
   double t_end = 4.0;                         // 积分结束时间 视具体情况定，时间越长，计算开销越大
   nlopt::opt optimizer(nlopt::LN_COBYLA, 1);  
@@ -91,8 +93,8 @@ cv::Vec2f AirResist::AirResistSolve(cv::Point2f point_a, double kv) {
   optimizer.set_xtol_rel(1e-6);
 
   std::vector<double> x(1, 5);  // 初始猜测值
-  std::tuple<double, std::pair<double, double>, double, double, double> data(
-      k1, {point_a.x, point_a.y}, t_start, t_end, kv);
+  std::tuple<double, std::pair<double, double>, double, double, double, double> data(
+      k1, {point_a.x, point_a.y}, t_start, t_end, kv, c1);
 
   // optimizer.set_min_objective(AirResist::objective,&data);
   // 这行代码的使用方式:这里试图将非静态成员函数 AirResist::objective 直接作为函数指针传递给 set_min_objective，
@@ -139,7 +141,7 @@ cv::Vec2f AirResist::ParabolSolve(cv::Point2f point_a, float kv) {
   }
   if (kv == 0) {
     kv = 700;
-  }             // 这又是解决什么bug
+  }             // 这又是解决什么bug,就算弹速读不到,也应该是1570/2680啊
   float phi0 = atan(tan_phi0), phi1 = atan(tan_phi1);
   if (isnan(phi0) || isnan(phi1)) {
     return {-1, -1};
@@ -149,6 +151,6 @@ cv::Vec2f AirResist::ParabolSolve(cv::Point2f point_a, float kv) {
   return ret;
 }
 
-// TODO: 解决k1=0时和抛物线模型数据出入过大的问题
-// TODO：解决在5m到7m这段距离内模型结果比抛物线还小的问题
-// TODO：模型改进，可以考虑在垂直方向的升力作用
+// DONE了一半: 解决k1=0时和抛物线模型数据出入过大的问题
+// DONE：解决在5m到7m这段距离内模型结果比抛物线还小的问题
+// DONE：模型改进，可以考虑在垂直方向的升力作用

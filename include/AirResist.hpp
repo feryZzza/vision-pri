@@ -9,7 +9,7 @@
 class AirResist{
 public:
     // 微分方程模型
-    void model(const std::vector<double> &z, std::vector<double> &dzdt, double t, double k1, double g);
+    void model(const std::vector<double> &z, std::vector<double> &dzdt, double t, double k1, double c1, double g);
 
     // Observer结构记录轨迹数据
     struct StateObserver{
