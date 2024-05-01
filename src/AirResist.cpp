@@ -6,9 +6,9 @@ void AirResist::model(const std::vector<double> &z, std::vector<double> &dzdt, d
   double vx = z[1];
   double vy = z[3];
   dzdt[0] = vx;
-  dzdt[1] = -k1 * vx * std::abs(vx);                  // x方向的阻力
+  dzdt[1] = -k1 * vx * std::abs(vx) / 0.044;                  // x方向的阻力
   dzdt[2] = vy;
-  dzdt[3] = g - (k1 - c1) * vy * std::abs(vy);              // y方向的阻力和重力
+  dzdt[3] = g - (k1 - c1) * vy * std::abs(vy) / 0.044;              // y方向的阻力和重力
 }
 
 // Observer结构记录轨迹数据
@@ -47,8 +47,8 @@ double AirResist::objective(const std::vector<double> &x, std::vector<double> &g
   // 可以使用 this 指针来引用当前对象实例
   integrate_const(stepper_type(),
                   std::bind(&AirResist::model,this, std::placeholders::_1, std::placeholders::_2,
-                            std::placeholders::_3, k1, c1, 9.788),
-                  z0, t_start, t_end, 0.0002, std::ref(observer));
+                            std::placeholders::_3, k1, c1, 9.81),
+                  z0, t_start, t_end, 0.001, std::ref(observer));
   // 可以调整积分步长
   
   // 应对段错误的处理
@@ -81,8 +81,8 @@ double AirResist::ObjectiveWrapper(const std::vector<double> &x, std::vector<dou
 
 // 优化函数
 cv::Vec2f AirResist::AirResistSolve(cv::Point2f point_a, double kv) {
-  double k1 = 0.0001949;                      // 阻力系数(m)
-  double c1 = 0.0001;                      // 升力系数(m)
+  double k1 = 0.0002412;                      // 阻力系数(m)
+  double c1 = 0.0000;                         // 升力系数(m)
   double t_start = 0.0;                       // 积分开始时间
   double t_end = 4.0;                         // 积分结束时间 视具体情况定，时间越长，计算开销越大
   nlopt::opt optimizer(nlopt::LN_COBYLA, 1);  
@@ -126,7 +126,7 @@ cv::Vec2f AirResist::ParabolSolve(cv::Point2f point_a, float kv) {
   // y1=v*sin@t-g*t^2/2
   // 联立方程消去t,得关于出射角tan@的方程kg*x1*x1/(2*kv*kv)*tan@^2+x1*tan@+kg*x1*x1/(2*kv*kv)-y1=0
   kv *= 100;
-  float kg = 978.8f;
+  float kg = 981.0f;
   float x1 = point_a.x*100, y1 = point_a.y*100;
   float a = kg * x1 * x1 / (2 * kv * kv), b = -x1,
         c = kg * x1 * x1 / (2 * kv * kv) - y1;
